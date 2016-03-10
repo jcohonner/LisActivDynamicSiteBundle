@@ -22,6 +22,5 @@ class GeneratorCommand extends ContainerAwareCommand
     {
         $generator = $this->getContainer()->get('dynamicsite.generator');
         $generator->dumpConfig();
-        $output->writeln('Youpi');
     }
 }

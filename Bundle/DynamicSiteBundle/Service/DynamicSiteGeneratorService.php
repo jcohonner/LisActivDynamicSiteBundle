@@ -9,10 +9,13 @@
 
 namespace LisActiv\Bundle\DynamicSiteBundle\Service;
 
+use eZ\Publish\API\Repository\Repository;
 use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\SearchService;
+use eZ\Publish\API\Repository\UserService;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
+use Symfony\Component\Yaml\Dumper;
 
 /**
  * Helper for places
@@ -29,13 +32,9 @@ class DynamicSiteGeneratorService
      */
     private $searchService;
 
-    public function __construct(
-        LocationService $locationService,
-        SearchService $searchService
-    )
+    public function __construct( Repository $repository )
     {
-        $this->locationService = $locationService;
-        $this->searchService = $searchService;
+        $this->repository = $repository;
     }
 
     /**
@@ -50,29 +49,95 @@ class DynamicSiteGeneratorService
     public function dumpConfig(  )
     {
 
+        //Services
+        $searchService = $this->repository->getSearchService();
+        $userService = $this->repository->getUserService();
 
-        $location = $this->locationService->loadLocation( 2 );
+        //Log Admin User to be able to browse full data
+        $this->repository->setCurrentUser( $userService->loadUser( 14 ) );
 
+        //Initialise config array
+        $siteaccessgroup = 'ezdemo_site_clean_group';
+        $config = array( 'siteaccess' =>
+                            array(
+                                'list' => array(),
+                                'groups' => array('ezdemo_site_clean_group'=>array()),
+                                'match'=> array('Map\Host'=>array())),
+                         'system'=> array()
+                       );
+
+        //Get all site settings documents
         $query = new Query();
-        $query->filter = new Criterion\ContentTypeIdentifier( 'site' );
+        $query->filter = new Criterion\ContentTypeIdentifier( 'site_settings' );
+        $searchResults = $searchService->findContent( $query );
 
-        /*new Criterion\LogicalAnd(
-            array(
-                new Criterion\ContentTypeIdentifier( 'site' ),
-                new Criterion\Subtree( $location->pathString ),
-            )
-        );*/
-
-
-
-        $searchResults = $this->searchService->findContent( $query );
-//var_dump($searchResults);
         foreach ($searchResults->searchHits as $site) {
-            var_dump($site->valueObject->id);
+
+            $settings = $this->siteSettings($site->valueObject);
+
+            $config['siteaccess']['list'][] = $settings['siteaccess'];
+            $config['siteaccess']['groups'][$siteaccessgroup][] = $settings['siteaccess'];
+            $config['siteaccess']['match']['Map\Host'][$settings['domain']] = $settings['siteaccess'] ;
+            $config['system'][$settings['siteaccess']] = array(
+                                                            'content' => array (
+                                                                'tree_root' => array(
+                                                                    'location_id' => intval($settings['root_location_id']),
+                                                                    'excluded_uri_prefixes' => array( '/media' )
+                                                                )
+                                                            )
+                                                        );
         }
 
-        return '';
+        //Dump file
+        $dumper = new Dumper();
+        $yaml = $dumper->dump($config);
+        file_put_contents(__DIR__ . '/../../../../../web/var/dynamicsite/config.yml', $yaml);
+
+
+        return true;
     }
 
+    /**
+     * returns array of settings from content
+     * @param SearchResult $content
+     * @returns Array
+     */
+    private function siteSettings( $content ) {
+        //Services
+        $contentService = $this->repository->getContentService();
+        $locationService = $this->repository->getLocationService();
+        $urlAliasService = $this->repository->getUrlAliasService();
+
+        //Get settings
+        $siteAccess = $this->siteAccessUniquekey( $content );
+        $domain = $content->getFieldValue( 'domain' )->text;
+        $rootContentInfo = $contentService->loadContentInfo( $content->getFieldValue( 'root_node' )->destinationContentId );
+        $rootMainLocationId = $rootContentInfo->mainLocationId;
+
+        return array(   'siteaccess'=>$siteAccess,
+                        'domain'=>$domain,
+                        'root_location_id'=>$rootMainLocationId);
+    }
+
+
+    /**
+     * returns the unique siteaccess name from content
+     * @param SearchResult $content
+     * @returns string
+     */
+    private function siteAccessUniquekey ( $content ) {
+        //Services
+        $contentService = $this->repository->getContentService();
+        $locationService = $this->repository->getLocationService();
+        $urlAliasService = $this->repository->getUrlAliasService();
+
+        //Get UrlAlias
+        $contentInfo = $contentService->loadContentInfo( $content->id );
+        $mainLocation = $locationService->loadLocation($contentInfo->mainLocationId);
+        $urlAlias = $urlAliasService->reverseLookup( $mainLocation );
+
+        //Path - remove first /, replace all / by _
+        return str_replace(array('/','-'),'_',substr($urlAlias->path,1));
+    }
 
 }
