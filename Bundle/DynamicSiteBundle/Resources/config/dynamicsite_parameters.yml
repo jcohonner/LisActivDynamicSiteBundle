@@ -1,0 +1,10 @@
+parameters :
+    # DYNAMIC CONFIG FILE relative to installation root
+    dynamicsite.config_file : /web/var/dynamicsite/config.yml
+    # DYNAMIC DEFINITION FROM CONTENT
+    # Site definition content type
+    dynamicsite.content_type : site_settings
+    # Domain field must be a string
+    dynamicsite.fields.domain : domain
+    # Tree Root Content Field must be an eZ Object Relation
+    dynamicsite.fields.root : root_node

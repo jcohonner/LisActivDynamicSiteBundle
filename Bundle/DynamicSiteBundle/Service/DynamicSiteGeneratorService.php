@@ -16,11 +16,12 @@ use eZ\Publish\API\Repository\UserService;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use Symfony\Component\Yaml\Dumper;
+use Symfony\Component\DependencyInjection\ContainerAware;
 
 /**
  * Helper for places
  */
-class DynamicSiteGeneratorService
+class DynamicSiteGeneratorService extends ContainerAware
 {
     /**
      * @var  \eZ\Publish\API\Repository\LocationService
@@ -68,7 +69,7 @@ class DynamicSiteGeneratorService
 
         //Get all site settings documents
         $query = new Query();
-        $query->filter = new Criterion\ContentTypeIdentifier( 'site_settings' );
+        $query->filter = new Criterion\ContentTypeIdentifier( $this->container->getParameter('dynamicsite.content_type') );
         $searchResults = $searchService->findContent( $query );
 
         foreach ($searchResults->searchHits as $site) {
@@ -91,8 +92,15 @@ class DynamicSiteGeneratorService
         //Dump file
         $dumper = new Dumper();
         $yaml = $dumper->dump($config);
-        file_put_contents(__DIR__ . '/../../../../../web/var/dynamicsite/config.yml', $yaml);
 
+        $configFile = __DIR__ . '/../../../../..' .$this->container->getParameter('dynamicsite.config_file');
+        $configFileDir = dirname($configFile);
+
+        //@todo better implementation
+        if (!file_exists($configFileDir)) {
+            mkdir($configFileDir, 0777, true);
+        }
+        file_put_contents( $configFile, $yaml);
 
         return true;
     }
@@ -108,10 +116,14 @@ class DynamicSiteGeneratorService
         $locationService = $this->repository->getLocationService();
         $urlAliasService = $this->repository->getUrlAliasService();
 
+        //Parameters
+        $domainField = $this->container->getParameter('dynamicsite.fields.domain');
+        $rootField = $this->container->getParameter('dynamicsite.fields.root');
+
         //Get settings
         $siteAccess = $this->siteAccessUniquekey( $content );
-        $domain = $content->getFieldValue( 'domain' )->text;
-        $rootContentInfo = $contentService->loadContentInfo( $content->getFieldValue( 'root_node' )->destinationContentId );
+        $domain = $content->getFieldValue( $domainField )->text;
+        $rootContentInfo = $contentService->loadContentInfo( $content->getFieldValue( $rootField )->destinationContentId );
         $rootMainLocationId = $rootContentInfo->mainLocationId;
 
         return array(   'siteaccess'=>$siteAccess,

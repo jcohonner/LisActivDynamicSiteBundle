@@ -6,6 +6,5 @@ services:
         class: %dynamicsite.generator.class%
         arguments:
             - @ezpublish.api.repository
-            - @ezpublish.api.service.location
-            - @ezpublish.api.service.search
-            - @ezpublish.api.service.user
+        calls:
+            - [ setContainer,[ @service_container ] ]

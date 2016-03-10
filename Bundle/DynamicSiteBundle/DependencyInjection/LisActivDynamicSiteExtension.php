@@ -31,6 +31,7 @@ class LisActivDynamicSiteExtension extends Extension implements PrependExtension
 
         // Base services override
         $loader->load( 'services.yml' );
+        $loader->load( 'dynamicsite_parameters.yml' );
     }
 
     /**
@@ -40,19 +41,22 @@ class LisActivDynamicSiteExtension extends Extension implements PrependExtension
      */
     public function prepend( ContainerBuilder $container )
     {
-        $configFile = __DIR__ . '/../../../../../web/var/dynamicsite/config.yml';
+
+        //Get Bundle parameters
+        $parameters = Yaml::parse( __DIR__ . '/../Resources/config/dynamicsite_parameters.yml' );
+        $configFile = __DIR__ . '/../../../../..'. $parameters['parameters']['dynamicsite.config_file'];
+
         $config = Yaml::parse( $configFile );
         if (is_array($config)) {
             $container->prependExtensionConfig( 'ezpublish', $config );
             $container->addResource( new FileResource( $configFile ) );
         }
 
+        //Just for test purpose, add simple template on site content
         $configFile = __DIR__ . '/../Resources/config/dynamicsite.yml';
         $config = Yaml::parse( file_get_contents( $configFile ) );
         $container->prependExtensionConfig( 'ezpublish', $config );
         $container->addResource( new FileResource( $configFile ) );
-
-
     }
 
 }
