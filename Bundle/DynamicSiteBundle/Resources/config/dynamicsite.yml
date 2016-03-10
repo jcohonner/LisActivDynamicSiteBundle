@@ -1,0 +1,8 @@
+system:
+    default:
+        location_view:
+            full:
+                site:
+                    template: "LisActivDynamicSiteBundle:full:site.html.twig"
+                    match:
+                        Identifier\ContentType: [site]

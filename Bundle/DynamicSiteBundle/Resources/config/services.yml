@@ -1,0 +1,9 @@
+parameters:
+    dynamicsite.generator.class: LisActiv\Bundle\DynamicSiteBundle\Service\DynamicSiteGeneratorService
+
+services:
+    dynamicsite.generator:
+        class: %dynamicsite.generator.class%
+        arguments:
+            - @ezpublish.api.service.location
+            - @ezpublish.api.service.search
