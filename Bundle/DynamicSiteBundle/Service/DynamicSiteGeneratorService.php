@@ -84,14 +84,15 @@ class DynamicSiteGeneratorService extends ContainerAware
                                                                 'tree_root' => array(
                                                                     'location_id' => intval($settings['root_location_id']),
                                                                     'excluded_uri_prefixes' => array( '/media' )
-                                                                )
-                                                            )
+                                                                    )
+                                                                ),
+                                                            'languages' => $settings['languages']
                                                         );
         }
 
         //Dump file
         $dumper = new Dumper();
-        $yaml = $dumper->dump($config);
+        $yaml = $dumper->dump($config,6);
 
         $configFile = __DIR__ . '/../../../../..' .$this->container->getParameter('dynamicsite.config_file');
         $configFileDir = dirname($configFile);
@@ -124,11 +125,13 @@ class DynamicSiteGeneratorService extends ContainerAware
         $siteAccess = $this->siteAccessUniquekey( $content );
         $domain = $content->getFieldValue( $domainField )->text;
         $rootContentInfo = $contentService->loadContentInfo( $content->getFieldValue( $rootField )->destinationContentId );
+        $languages = $this->getContentLanguages( $rootContentInfo );
         $rootMainLocationId = $rootContentInfo->mainLocationId;
 
         return array(   'siteaccess'=>$siteAccess,
                         'domain'=>$domain,
-                        'root_location_id'=>$rootMainLocationId);
+                        'root_location_id'=>$rootMainLocationId,
+                        'languages'=>$languages);
     }
 
 
@@ -146,10 +149,15 @@ class DynamicSiteGeneratorService extends ContainerAware
         //Get UrlAlias
         $contentInfo = $contentService->loadContentInfo( $content->id );
         $mainLocation = $locationService->loadLocation($contentInfo->mainLocationId);
-        $urlAlias = $urlAliasService->reverseLookup( $mainLocation );
+        $urlAlias = $urlAliasService->reverseLookup( $mainLocation, $contentInfo->mainLanguageCode, true );
 
         //Path - remove first /, replace all / by _
-        return str_replace(array('/','-'),'_',substr($urlAlias->path,1));
+        return strtolower(str_replace(array('/','-'),'_',substr($urlAlias->path,1)));
+    }
+
+    private function getContentLanguages( $contentInfo ) {
+        $contentService = $this->repository->getContentService();
+        return $contentService->loadVersionInfo( $contentInfo )->languageCodes;
     }
 
 }
