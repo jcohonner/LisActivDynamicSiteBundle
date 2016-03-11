@@ -45,11 +45,15 @@ To dump configuration:
 php ezpublish/console dynamicsite:dump
 ```
 
+Then clear cache
+
 ## Todo
 
 * Better dump file management (where, how..)
 * Trigger publish event to run dump
 * Support more site settings
 * Support more match methods
+* Run config cache clear after dump
+* Add siteaccess group parameter
 
 
