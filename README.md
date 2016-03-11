@@ -2,15 +2,15 @@
 
 ## Purpose
 
-eZ Publish supports multi-site configuration by design for years. Unfortunately, creating a new site requires physical settings files changes. This means a whole deployment process if you want to respect some standards on not change production config files on the fly.
+eZ Publish supports multi-site configuration by design since years. Unfortunately, creating a new site requires setting files changes. This means a whole deployment process if you want to respect some standards like not changing production config files on the fly.
 
-When multi-site means multiple different sites with different design, configuration, controllers (etc.) this doesn't really matter as you will in any case to go through a development process.
+When multi-site means multiple different sites with different design, configuration, controllers (etc.) this doesn't really matter. You will have to go through a development process in any case.
 
-if multi-site means for your project, the same exact site with only different content and maybe some little customization, it quickly becomes annoying to have to deploy config files.
+If for your project, multi-site means the same exact site with only different content and maybe a bit of customization, it quickly becomes annoying to have to deploy config files.
 
 That’s where LisActivDynamicSiteBundle may help you.
 
-This bundle searches for specific content type (“site settings”) that describe sites and their configuration (name, domain, root). This configuration is dumped in a YML file that is loaded using Synfony DependecyInjection methods.
+This bundle searches for specific content type (“site settings”) that describes sites and their configuration (name, domain, root). This configuration is dumped in a YML file that is loaded using Synfony DependecyInjection methods.
 
 ## Warning
 
