@@ -35,6 +35,7 @@ Default values are:
 * Content type: site_settings
 * Root field (eZ Relation Object): root
 * Domain (only match method supported): domain
+* Default User Placement field field (eZ Relation Object): default_user_placement
 
 ## Commands
 

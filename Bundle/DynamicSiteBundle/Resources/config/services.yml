@@ -1,5 +1,6 @@
 parameters:
     dynamicsite.generator.class: LisActiv\Bundle\DynamicSiteBundle\Service\DynamicSiteGeneratorService
+    dynamicsite.configuration_mapper.class: LisActiv\Bundle\DynamicSiteBundle\LegacyMapper\Configuration
 
 services:
     dynamicsite.generator:
@@ -8,3 +9,12 @@ services:
             - @ezpublish.api.repository
         calls:
             - [ setContainer,[ @service_container ] ]
+
+    dynamicsite.configuration_mapper:
+        class: %dynamicsite.configuration_mapper.class%
+        arguments:
+            - @ezpublish.config.resolver.core
+        calls:
+            - [setContainer, [@service_container]]
+        tags:
+            - { name: kernel.event_subscriber }

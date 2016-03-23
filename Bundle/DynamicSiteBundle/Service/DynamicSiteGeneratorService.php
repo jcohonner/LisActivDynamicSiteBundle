@@ -59,12 +59,13 @@ class DynamicSiteGeneratorService extends ContainerAware
 
         //Initialise config array
         $siteaccessgroup = 'ezdemo_site_clean_group';
-        $config = array( 'siteaccess' =>
-                            array(
-                                'list' => array(),
-                                'groups' => array('ezdemo_site_clean_group'=>array()),
-                                'match'=> array('Map\Host'=>array())),
-                         'system'=> array()
+        $config = array( 'ezpublish' => array(   'siteaccess' =>
+                                                    array(
+                                                        'list' => array(),
+                                                        'groups' => array('ezdemo_site_clean_group'=>array()),
+                                                        'match'=> array('Map\Host'=>array())),
+                                                 'system'=> array()),
+                         'parameters' => array()
                        );
 
         //Get all site settings documents
@@ -76,10 +77,10 @@ class DynamicSiteGeneratorService extends ContainerAware
 
             $settings = $this->siteSettings($site->valueObject);
 
-            $config['siteaccess']['list'][] = $settings['siteaccess'];
-            $config['siteaccess']['groups'][$siteaccessgroup][] = $settings['siteaccess'];
-            $config['siteaccess']['match']['Map\Host'][$settings['domain']] = $settings['siteaccess'] ;
-            $config['system'][$settings['siteaccess']] = array(
+            $config['ezpublish']['siteaccess']['list'][] = $settings['siteaccess'];
+            $config['ezpublish']['siteaccess']['groups'][$siteaccessgroup][] = $settings['siteaccess'];
+            $config['ezpublish']['siteaccess']['match']['Map\Host'][$settings['domain']] = $settings['siteaccess'] ;
+            $config['ezpublish']['system'][$settings['siteaccess']] = array(
                                                             'content' => array (
                                                                 'tree_root' => array(
                                                                     'location_id' => intval($settings['root_location_id']),
@@ -88,13 +89,33 @@ class DynamicSiteGeneratorService extends ContainerAware
                                                                 ),
                                                             'languages' => $settings['languages']
                                                         );
+
+            $config['parameters']['ezsettings.'.$settings['siteaccess'].'.site_name'] = $settings['site_name'];
+            $config['parameters']['ezsettings.'.$settings['siteaccess'].'.default_user_placement'] = intval($settings['default_user_placement']);
         }
 
-        //Dump file
+        //Default values
+        $config['parameters']['ezsettings.default.site_name'] = 'ez.no';
+        $config['parameters']['ezsettings.default.default_user_placement'] = 12;
+
+        //Dump  Config file
         $dumper = new Dumper();
-        $yaml = $dumper->dump($config,6);
+        $yaml = $dumper->dump($config['ezpublish'],6);
 
         $configFile = __DIR__ . '/../../../../..' .$this->container->getParameter('dynamicsite.config_file');
+        $configFileDir = dirname($configFile);
+
+        //@todo better implementation
+        if (!file_exists($configFileDir)) {
+            mkdir($configFileDir, 0777, true);
+        }
+        file_put_contents( $configFile, $yaml);
+
+
+        //Dump Parameters file
+        $yaml = $dumper->dump(array('parameters'=>$config['parameters']),6);
+
+        $configFile = __DIR__ . '/../../../../..' .$this->container->getParameter('dynamicsite.parameters_file');
         $configFileDir = dirname($configFile);
 
         //@todo better implementation
@@ -120,18 +141,25 @@ class DynamicSiteGeneratorService extends ContainerAware
         //Parameters
         $domainField = $this->container->getParameter('dynamicsite.fields.domain');
         $rootField = $this->container->getParameter('dynamicsite.fields.root');
+        $userPlacementField = $this->container->getParameter('dynamicsite.fields.default_user_placement');
 
         //Get settings
         $siteAccess = $this->siteAccessUniquekey( $content );
         $domain = $content->getFieldValue( $domainField )->text;
         $rootContentInfo = $contentService->loadContentInfo( $content->getFieldValue( $rootField )->destinationContentId );
+        $defaultUserPlacementInfo = $contentService->loadContentInfo( $content->getFieldValue( $userPlacementField )->destinationContentId );
         $languages = $this->getContentLanguages( $rootContentInfo );
         $rootMainLocationId = $rootContentInfo->mainLocationId;
+        $defaultUserPlacementId = $defaultUserPlacementInfo->mainLocationId;
+        //Note as site is used for User Hash we need to get it stable so we use the site settings content Id
+        $siteName = 'site_' . $content->id;
 
         return array(   'siteaccess'=>$siteAccess,
                         'domain'=>$domain,
                         'root_location_id'=>$rootMainLocationId,
-                        'languages'=>$languages);
+                        'languages'=>$languages,
+                        'default_user_placement' => $defaultUserPlacementId,
+                        'site_name' => $siteName);
     }
 
 

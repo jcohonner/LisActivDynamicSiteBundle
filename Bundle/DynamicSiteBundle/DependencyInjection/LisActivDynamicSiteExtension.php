@@ -32,6 +32,17 @@ class LisActivDynamicSiteExtension extends Extension implements PrependExtension
         // Base services override
         $loader->load( 'services.yml' );
         $loader->load( 'dynamicsite_parameters.yml' );
+
+        // Generated parameters
+        $parameters = Yaml::parse( __DIR__ . '/../Resources/config/dynamicsite_parameters.yml' );
+        $parametersFile = __DIR__ . '/../../../../..'. $parameters['parameters']['dynamicsite.parameters_file'];
+
+        $loader = new YamlFileLoader(
+            $container,
+            new FileLocator( dirname($parametersFile) )
+        );
+
+        $loader->load(basename($parametersFile));
     }
 
     /**
@@ -45,6 +56,8 @@ class LisActivDynamicSiteExtension extends Extension implements PrependExtension
         //Get Bundle parameters
         $parameters = Yaml::parse( __DIR__ . '/../Resources/config/dynamicsite_parameters.yml' );
         $configFile = __DIR__ . '/../../../../..'. $parameters['parameters']['dynamicsite.config_file'];
+
+
 
         $config = Yaml::parse( $configFile );
         if (is_array($config)) {
