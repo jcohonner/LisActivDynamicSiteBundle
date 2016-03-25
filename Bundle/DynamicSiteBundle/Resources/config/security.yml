@@ -1,0 +1,16 @@
+parameters:
+    security.authentication.provider.dao.class: LisActiv\Bundle\DynamicSiteBundle\Service\Security\EmailAuthenticationProvider
+    ezpublish.security.user_provider.class: LisActiv\Bundle\DynamicSiteBundle\Service\Security\UserProvider
+
+
+services:
+    security.authentication.provider.dao:
+        class: %security.authentication.provider.dao.class%
+        arguments:
+            - ~ # User Provider
+            - @security.user_checker
+            - ~ # Provider-shared Key
+            - @security.encoder_factory
+            - %security.authentication.hide_user_not_found%
+        calls:
+            - [setRepository, [@ezpublish.api.repository]]

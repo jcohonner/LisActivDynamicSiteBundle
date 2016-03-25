@@ -54,12 +54,10 @@ class Configuration extends ContainerAware implements EventSubscriberInterface
         $settings["site.ini/UserSettings/RequireUniqueEmail"] = 'false';
 
         //From dynamic site parameters
-        if ($this->configResolver->hasParameter( "default_user_placement" )) {
-            $settings["site.ini/UserSettings/DefaultUserPlacement"] = $this->configResolver->getParameter( "default_user_placement" );
-        }
-        if ($this->configResolver->hasParameter( "site_name" )) {
-            $settings["site.ini/UserSettings/SiteName"] = $this->configResolver->getParameter( "site_name" );
-        }
+        $settings["site.ini/UserSettings/DefaultUserPlacement"] = $this->configResolver->getParameter( "default_user_placement" );
+        $settings["site.ini/UserSettings/SiteName"] = $this->configResolver->getParameter( "site_name" );
+        $settings["site.ini/UserSettings/UserClassID"] = $this->configResolver->getParameter( "user_content_type_id" );
+
 
         $event->getParameters()->set(
             "injected-settings",

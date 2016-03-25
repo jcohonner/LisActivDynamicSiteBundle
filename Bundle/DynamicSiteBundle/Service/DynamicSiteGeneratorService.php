@@ -12,7 +12,7 @@ namespace LisActiv\Bundle\DynamicSiteBundle\Service;
 use eZ\Publish\API\Repository\Repository;
 use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\SearchService;
-use eZ\Publish\API\Repository\UserService;
+//use eZ\Publish\API\Repository\UserService;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use Symfony\Component\Yaml\Dumper;
@@ -92,11 +92,11 @@ class DynamicSiteGeneratorService extends ContainerAware
 
             $config['parameters']['ezsettings.'.$settings['siteaccess'].'.site_name'] = $settings['site_name'];
             $config['parameters']['ezsettings.'.$settings['siteaccess'].'.default_user_placement'] = intval($settings['default_user_placement']);
+            $config['parameters']['ezsettings.'.$settings['siteaccess'].'.user_content_type_id'] = intval($settings['user_content_type_id']);
+
         }
 
-        //Default values
-        $config['parameters']['ezsettings.default.site_name'] = 'ez.no';
-        $config['parameters']['ezsettings.default.default_user_placement'] = 12;
+
 
         //Dump  Config file
         $dumper = new Dumper();
@@ -142,10 +142,13 @@ class DynamicSiteGeneratorService extends ContainerAware
         $domainField = $this->container->getParameter('dynamicsite.fields.domain');
         $rootField = $this->container->getParameter('dynamicsite.fields.root');
         $userPlacementField = $this->container->getParameter('dynamicsite.fields.default_user_placement');
+        $userContentTypeIdField = $this->container->getParameter('dynamicsite.fields.user_content_type_id');
+
 
         //Get settings
         $siteAccess = $this->siteAccessUniquekey( $content );
         $domain = $content->getFieldValue( $domainField )->text;
+        $userContentTypeId = $content->getFieldValue( $userContentTypeIdField )->text;
         $rootContentInfo = $contentService->loadContentInfo( $content->getFieldValue( $rootField )->destinationContentId );
         $defaultUserPlacementInfo = $contentService->loadContentInfo( $content->getFieldValue( $userPlacementField )->destinationContentId );
         $languages = $this->getContentLanguages( $rootContentInfo );
@@ -159,7 +162,8 @@ class DynamicSiteGeneratorService extends ContainerAware
                         'root_location_id'=>$rootMainLocationId,
                         'languages'=>$languages,
                         'default_user_placement' => $defaultUserPlacementId,
-                        'site_name' => $siteName);
+                        'site_name' => $siteName,
+                        'user_content_type_id' => $userContentTypeId);
     }
 
 

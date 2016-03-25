@@ -11,4 +11,12 @@ parameters :
     dynamicsite.fields.root : root_node
     # Node for user Placement
     dynamicsite.fields.default_user_placement : default_user_placement
+    # User Class ID (default is 4) must be a string (int value of the class)
+    dynamicsite.fields.user_content_type_id : user_content_type_id
+    #Additional settings for Legacy and Login Action
+    ezsettings.default.site_name: ez.no
+    #Additional settings for Legacy and Login Action
+    ezsettings.default.default_user_placement: 12
+    #Additional settings for Legacy User content type (class in legacy)
+    ezsettings.default.user_content_type_id: 4
 

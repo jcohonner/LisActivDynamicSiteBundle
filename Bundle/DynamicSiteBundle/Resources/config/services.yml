@@ -1,6 +1,8 @@
 parameters:
     dynamicsite.generator.class: LisActiv\Bundle\DynamicSiteBundle\Service\DynamicSiteGeneratorService
     dynamicsite.configuration_mapper.class: LisActiv\Bundle\DynamicSiteBundle\LegacyMapper\Configuration
+    ezpublish.api.repository.factory.class: LisActiv\Bundle\DynamicSiteBundle\Service\LisActivRepositoryFactory
+
 
 services:
     dynamicsite.generator:
