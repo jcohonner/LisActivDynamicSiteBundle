@@ -91,6 +91,12 @@ These are added in dynamicsite_parameters.yml and in the dynamically generated p
     ezsettings.default.user_content_type_id: 4
 ```
 
+If using the dynamicsite generator, these data will be included in the dump per siteaccess. Otherwise just override it in your configuration
+
+```
+    ezsettings.<siteaccess>.user_content_type_id: 4
+```
+
 Step 2 : Inject Into Legacy
 
 see LisActiv\Bundle\DynamicSiteBundle\LegacyMapper\Configuration
